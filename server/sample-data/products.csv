@@ -1,0 +1,6 @@
+name,brand,category,price,rating,review_count,target_audience,url,description,features
+Nimbus Air 14,Nimbus,laptops,749,4.6,3120,students,https://example.com/nimbus-air-14,"Lightweight 14-inch laptop with 18-hour battery, built for students who carry their laptop all day.","18-hour battery; 1.2 kg; 16GB RAM; 512GB SSD; backlit keyboard; USB-C charging"
+Nimbus Pro 16,Nimbus,laptops,1899,4.3,210,creative professionals,https://example.com/nimbus-pro-16,Powerful 16-inch workstation laptop.,"RTX GPU; 32GB RAM"
+Nimbus Budget 15,Nimbus,laptops,399,3.9,45,students,,Affordable laptop.,
+Nimbus Buds X,Nimbus,wireless earbuds,129,4.5,1840,commuters,https://example.com/buds-x,"Noise-cancelling earbuds with 30-hour total battery and multipoint Bluetooth, tuned for commuters.","ANC; 30h battery; multipoint; IPX4; wireless charging"
+Nimbus Brew One,Nimbus,coffee makers,89,4.1,95,home baristas,https://example.com/brew-one,Single-serve coffee maker.,"12 oz; programmable"
