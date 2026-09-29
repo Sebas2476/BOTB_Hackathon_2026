@@ -1,0 +1,19 @@
+# Render Blueprint: one web service that serves both the API and the React app.
+services:
+  - type: web
+    name: ranksight
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      # Optional. Leave blank to use simulated models.
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false

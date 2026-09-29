@@ -73,6 +73,19 @@ app.post('/api/reports', (req, res) => {
   res.status(202).json({ id });
 });
 
+// --- Web app (production) ---------------------------------------------------
+// When the client has been built, serve it from this same server so the whole
+// app deploys as one service. Unknown non-API GETs fall back to index.html so
+// client-side routes like /reports/2 survive a page refresh.
+const clientDist = path.join(__dirname, '..', '..', 'client', 'dist');
+if (fs.existsSync(path.join(clientDist, 'index.html'))) {
+  app.use(express.static(clientDist));
+  app.use((req, res, next) => {
+    if (req.method !== 'GET' || req.path.startsWith('/api')) return next();
+    res.sendFile(path.join(clientDist, 'index.html'));
+  });
+}
+
 const port = Number(process.env.PORT) || 3001;
 app.listen(port, () => {
   console.log(`API listening on http://localhost:${port}`);

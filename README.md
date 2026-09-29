@@ -65,3 +65,17 @@ server/  Express API, SQLite via Node's built-in node:sqlite (Node 22.5+)
 | GET | `/api/providers` | models and whether each is live or simulated |
 | POST | `/api/reports` | `{ productIds, models, promptsPerProduct, customPrompts }` → `{ id }` (runs async) |
 | GET | `/api/reports`, `/api/reports/:id` | list / poll a report |
+
+## Deploying to Render
+
+The app deploys as a single Render web service: Express serves the API and the built React app.
+`render.yaml` defines it (Blueprint), or set it up manually:
+
+- **Build command:** `npm install && npm run build`
+- **Start command:** `npm start`
+- **Health check path:** `/api/health`
+- **Env vars:** `NODE_VERSION=24`, plus any API keys from `server/.env.example`
+
+Note: Render's free tier has no persistent disk, so the SQLite database resets on every
+redeploy/restart. For persistent data, use a paid instance with a disk mounted at e.g. `/var/data`
+and set `DB_PATH=/var/data/data.db`.
