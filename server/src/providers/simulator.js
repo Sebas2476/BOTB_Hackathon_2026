@@ -157,16 +157,15 @@ export function simulateAudit(modelId, product, fields, valueOf) {
   const knowledge = Math.min(1, productStrength(product, modelId) + 0.15);
   const name = product.specs?.model ? `${product.brand} ${product.specs.model}` : product.name;
 
-  if (rand() > 0.3 + knowledge * 0.7) {
-    const data = Object.fromEntries(fields.map((f) => [f.ask ?? f.key, null]));
-    return `I don't have reliable information about the ${name}. It may be a newer or regional model; check the manufacturer's site for current specs and pricing.\n\n\`\`\`json\n${JSON.stringify(data, null, 2)}\n\`\`\``;
-  }
+  // An assistant that doesn't know the product usually still answers, guessing from what's
+  // typical for the category: a few guesses land, most don't.
+  const recognized = rand() <= 0.3 + knowledge * 0.7;
 
   const data = {};
   for (const f of fields) {
     const ours = valueOf(f);
     const r = rand();
-    const pRight = 0.35 + knowledge * 0.4;
+    const pRight = recognized ? 0.35 + knowledge * 0.4 : 0.2 + knowledge * 0.2;
     const pWrong = (1 - pRight) * (f.group === 'offer' ? 0.85 : 0.7); // offer data goes stale fastest
     let v;
     if (r < pRight) v = f.type === 'list' ? String(ours).split(';') : f.type === 'bool' ? /true/i.test(ours) : ours;
@@ -175,6 +174,10 @@ export function simulateAudit(modelId, product, fields, valueOf) {
     else v = null;
     if (typeof v === 'string' && f.type === 'number') v = Number(v.replace(/[$,]/g, ''));
     data[f.ask ?? f.key] = v ?? null;
+  }
+  if (!recognized) {
+    const text = `I don't have specific information about the ${name}; it may be a newer or regional model. Based on similar ${product.category} from ${product.brand} and others in its class, here is what it most likely offers. Check the manufacturer's site to confirm.`;
+    return `${text}\n\n\`\`\`json\n${JSON.stringify(data, null, 2)}\n\`\`\``;
   }
   const use = product.target_audience ? ` It's aimed at ${product.target_audience}.` : '';
   const text = `The ${name} is ${/^[aeiou]/i.test(product.brand) ? 'an' : 'a'} ${product.brand} ${product.category.replace(/s$/, '')} with a solid reputation among owners.${use} Specs and pricing below are based on the information available to me and may have changed.`;
