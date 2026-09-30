@@ -1,5 +1,7 @@
 # BOTB_Hackathon_2026: MAAT Intelligence
 
+**Live site:** https://ranksight.onrender.com/
+
 **See whether your products show up when shoppers ask AI assistants for recommendations.**
 
 A business picks products from its catalog and runs **one report with three phases**:
