@@ -5,6 +5,7 @@ import StatTile from '../components/StatTile.jsx'
 import BarList from '../components/BarList.jsx'
 import RankMatrix from '../components/RankMatrix.jsx'
 import Recommendations from '../components/Recommendations.jsx'
+import AuditReport from './AuditReport.jsx'
 
 export default function ReportDetailPage() {
   const { id } = useParams()
@@ -49,6 +50,8 @@ export default function ReportDetailPage() {
   if (report.status === 'failed') {
     return <div className="alert alert-error">Report failed: {report.error}</div>
   }
+
+  if (report.type === 'audit') return <AuditReport report={report} />
 
   const summaries = report.summary.products
   const s = summaries[Math.min(active, summaries.length - 1)]

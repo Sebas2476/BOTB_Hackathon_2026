@@ -3,6 +3,8 @@ import { askModel, getProvider } from './providers/index.js';
 import { anthropic } from './providers/anthropic.js';
 import { analyzeAnswer } from './analyzer.js';
 import { buildRecommendations } from './recommendations.js';
+import { auditableFields, auditAnswer, buildAuditPrompt, ourValue, overviewPrompt, overviewText, summarizeAudit } from './audit.js';
+import { simulateAudit } from './providers/simulator.js';
 import { createReport, updateReportProgress, completeReport, failReport } from './db.js';
 
 const CONCURRENCY = 4;
@@ -136,6 +138,56 @@ export function startReport(products, { models, promptsPerProduct = 3, customPro
     for (const { product, prompts } of plan) {
       const summary = summarizeProduct(product, results.filter((r) => r.productId === product.id), models, prompts);
       summary.aiInsights = await aiInsights(summary);
+      productSummaries.push(summary);
+    }
+    completeReport(reportId, results, { products: productSummaries });
+  })().catch((err) => failReport(reportId, err.stack || err));
+
+  return reportId;
+}
+
+// Accuracy audit: ask each model about each product, cross-reference its claims
+// against our database, and explain every flag from an AEO standpoint.
+export function startAudit(products, { models }) {
+  const tasks = products.flatMap((product) => models.map((model) => ({ product, model })));
+  const labels = Object.fromEntries(models.map((m) => [m, getProvider(m).label]));
+  const config = {
+    productIds: products.map((p) => p.id),
+    productNames: products.map((p) => p.name),
+    models,
+  };
+  const reportId = createReport(config, tasks.length, 'audit');
+
+  (async () => {
+    const results = [];
+    let done = 0;
+    await runPool(tasks, CONCURRENCY, async ({ product, model }) => {
+      const prompt = buildAuditPrompt(product);
+      const base = { productId: product.id, model, prompt };
+      const simulate = () => simulateAudit(model, product, auditableFields(product), (f) => ourValue(product, f));
+      try {
+        const { text, live } = await askModel(model, prompt, product, simulate);
+        results.push({ ...base, live, ...auditAnswer(product, text), response: text });
+      } catch (err) {
+        results.push({ ...base, live: true, error: err.message });
+      }
+      done++;
+      updateReportProgress(reportId, done, results);
+    });
+
+    const productSummaries = [];
+    for (const product of products) {
+      const summary = summarizeAudit(product, results.filter((r) => r.productId === product.id), models, labels);
+      summary.overview = overviewText(summary);
+      summary.overviewBy = 'rules';
+      if (anthropic.isConfigured() && summary.checks) {
+        try {
+          summary.overview = (await anthropic.ask(overviewPrompt(summary))).trim();
+          summary.overviewBy = 'claude';
+        } catch {
+          // keep the rule-based overview
+        }
+      }
       productSummaries.push(summary);
     }
     completeReport(reportId, results, { products: productSummaries });

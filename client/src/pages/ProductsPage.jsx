@@ -51,6 +51,17 @@ export default function ProductsPage() {
     }
   }
 
+  const loadHome = async () => {
+    setMessage(null)
+    try {
+      const { inserted, skipped } = await api.loadHomeDatabase()
+      setMessage({ type: 'ok', text: `Loaded ${inserted.length} product(s) from the home database${skipped ? `; ${skipped} already present` : ''}.` })
+      load()
+    } catch (e) {
+      setMessage({ type: 'error', text: e.message })
+    }
+  }
+
   const remove = async (id) => {
     await api.deleteProduct(id)
     load()
@@ -80,7 +91,10 @@ export default function ProductsPage() {
         <div className="card">
           <div className="card-head">
             <h2>Upload products</h2>
-            <a href="/api/sample.csv" className="small">Download sample CSV</a>
+            <span style={{ display: 'flex', gap: 12, alignItems: 'baseline' }}>
+              <button className="btn btn-ghost small" onClick={loadHome}>Load home database</button>
+              <a href="/api/sample.csv" className="small">Download CSV</a>
+            </span>
           </div>
           <div
             className={`dropzone${drag ? ' drag' : ''}`}
@@ -94,7 +108,8 @@ export default function ProductsPage() {
             </svg>
             <p style={{ marginTop: 8, fontWeight: 600 }}>Drop a CSV or JSON file, or click to browse</p>
             <p className="muted small" style={{ marginTop: 4 }}>
-              Required: name, brand, category. Recommended: price, rating, review_count, target_audience, url, description, features
+              Required: name (or model), brand, category. Recommended: price, rating, review_count, target_audience, url,
+              description, features. Extra spec columns (ram_gb, battery_hours, availability…) are kept for accuracy audits.
             </p>
             <input ref={fileRef} type="file" accept=".csv,.json,text/csv,application/json" hidden onChange={(e) => handleFile(e.target.files[0])} />
           </div>
@@ -139,7 +154,7 @@ export default function ProductsPage() {
         {products.length === 0 ? (
           <div className="empty">
             <h2>No products yet</h2>
-            <p>Upload a CSV above, or try the <a href="/api/sample.csv">sample file</a>.</p>
+            <p>Upload a CSV above, or <button className="btn btn-ghost" onClick={loadHome}>load the home database</button></p>
           </div>
         ) : (
           <div className="table-wrap">
@@ -153,7 +168,7 @@ export default function ProductsPage() {
               <tbody>
                 {products.map((p) => (
                   <tr key={p.id}>
-                    <td><strong>{p.name}</strong><div className="muted small">{p.brand}</div></td>
+                    <td><strong>{p.name}</strong><div className="muted small">{p.brand}{p.sku ? ` · ${p.sku}` : ''}</div></td>
                     <td>{p.category}</td>
                     <td>{p.target_audience || <span className="muted">—</span>}</td>
                     <td className="num">{p.price != null ? `$${p.price.toLocaleString()}` : '—'}</td>

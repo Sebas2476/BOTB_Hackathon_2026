@@ -22,9 +22,11 @@ export const api = {
   uploadCsv: (csv) => request('/products', json('POST', { csv })),
   uploadJson: (rows) => request('/products', json('POST', rows)),
   deleteProduct: (id) => request(`/products/${id}`, { method: 'DELETE' }),
+  loadHomeDatabase: () => request('/products/home', { method: 'POST' }),
   reports: () => request('/reports'),
   report: (id) => request(`/reports/${id}`),
   runReport: (config) => request('/reports', json('POST', config)),
+  runAudit: (config) => request('/audits', json('POST', config)),
 }
 
 export const pct = (x) => (x == null ? '—' : `${Math.round(x * 100)}%`)

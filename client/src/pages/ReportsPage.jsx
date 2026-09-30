@@ -2,6 +2,16 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api, pct, rankLabel } from '../api.js'
 
+// Headline number per product: accuracy for audits, visibility and average rank for ranking reports.
+function resultLabel(r) {
+  if (!r.products.length) return '—'
+  if (r.type === 'audit') {
+    const acc = r.products.map((p) => p.accuracyScore ?? 0)
+    return `${pct(acc.reduce((a, b) => a + b, 0) / acc.length)} accurate · ${r.products.reduce((n, p) => n + (p.flagCount ?? 0), 0)} flags`
+  }
+  return r.products.map((p) => `${pct(p.visibilityScore)} · ${rankLabel(p.avgRank)}`).join(' / ')
+}
+
 export default function ReportsPage() {
   const [reports, setReports] = useState(null)
   const [error, setError] = useState(null)
@@ -15,9 +25,12 @@ export default function ReportsPage() {
       <div className="page-head">
         <div>
           <h1>Reports</h1>
-          <p className="muted">Every visibility report you've run, newest first.</p>
+          <p className="muted">Every visibility report and accuracy audit you've run, newest first.</p>
         </div>
-        <Link to="/run" className="btn btn-primary">New report</Link>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <Link to="/audit" className="btn">New audit</Link>
+          <Link to="/run" className="btn btn-primary">New report</Link>
+        </div>
       </div>
       <div className="card">
         {reports.length === 0 ? (
@@ -26,16 +39,16 @@ export default function ReportsPage() {
           <div className="table-wrap">
             <table>
               <thead>
-                <tr><th>Report</th><th>Products</th><th>Models</th><th className="num">Visibility</th><th className="num">Avg rank</th><th>Status</th></tr>
+                <tr><th>Report</th><th>Type</th><th>Products</th><th>Models</th><th className="num">Result</th><th>Status</th></tr>
               </thead>
               <tbody>
                 {reports.map((r) => (
                   <tr key={r.id}>
                     <td><Link to={`/reports/${r.id}`}><strong>#{r.id}</strong></Link><div className="muted small">{new Date(r.created_at + 'Z').toLocaleString()}</div></td>
+                    <td className="small">{r.type === 'audit' ? 'Accuracy audit' : 'Visibility'}</td>
                     <td>{r.config.productNames.join(', ')}</td>
                     <td className="small">{r.config.models.length} models</td>
-                    <td className="num">{r.products.map((p) => pct(p.visibilityScore)).join(' / ') || '—'}</td>
-                    <td className="num">{r.products.map((p) => rankLabel(p.avgRank)).join(' / ') || '—'}</td>
+                    <td className="num small">{resultLabel(r)}</td>
                     <td><span className="badge">{r.status === 'running' ? `running ${r.progress_done}/${r.progress_total}` : r.status}</span></td>
                   </tr>
                 ))}

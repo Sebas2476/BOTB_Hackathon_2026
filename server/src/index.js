@@ -4,12 +4,23 @@ import cors from 'cors';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { insertProducts, listProducts, getProductsByIds, deleteProduct, getReport, listReports } from './db.js';
+import { insertProducts, listProducts, countProducts, getProductsByIds, deleteProduct, getReport, listReports } from './db.js';
 import { parseCsv } from './csv.js';
 import { describeProviders, getProvider } from './providers/index.js';
-import { startReport } from './reportRunner.js';
+import { startReport, startAudit } from './reportRunner.js';
+import { auditableFields } from './audit.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const HOME_DB = path.join(__dirname, '..', 'sample-data', 'product_database.csv');
+
+// The MAAT home product database: loaded on first start so the app is never empty
+// (Render's free tier also wipes SQLite on every deploy).
+const loadHomeDatabase = () => insertProducts(parseCsv(fs.readFileSync(HOME_DB, 'utf8')));
+if (countProducts() === 0) {
+  const { inserted } = loadHomeDatabase();
+  console.log(`Loaded ${inserted.length} products from the home database`);
+}
+
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: '5mb' }));
@@ -36,14 +47,20 @@ app.post('/api/products', (req, res) => {
   res.status(result.inserted.length ? 201 : 400).json(result);
 });
 
+// Re-imports the home database; products already present (same SKU) are skipped.
+app.post('/api/products/home', (_req, res) => {
+  const { inserted, errors } = loadHomeDatabase();
+  res.json({ inserted, skipped: errors.length });
+});
+
 app.delete('/api/products/:id', (req, res) => {
   if (!deleteProduct(Number(req.params.id))) return res.status(404).json({ error: 'Not found' });
   res.status(204).end();
 });
 
 app.get('/api/sample.csv', (_req, res) => {
-  res.type('text/csv').attachment('sample-products.csv');
-  fs.createReadStream(path.join(__dirname, '..', 'sample-data', 'products.csv')).pipe(res);
+  res.type('text/csv').attachment('product_database.csv');
+  fs.createReadStream(HOME_DB).pipe(res);
 });
 
 // --- Reports ----------------------------------------------------------------
@@ -70,6 +87,20 @@ app.post('/api/reports', (req, res) => {
   if (!count && !custom.some((c) => c.trim())) return res.status(400).json({ error: 'No prompts to run' });
 
   const id = startReport(products, { models, promptsPerProduct: count, customPrompts: custom });
+  res.status(202).json({ id });
+});
+
+app.post('/api/audits', (req, res) => {
+  const { productIds = [], models = [] } = req.body ?? {};
+  if (!productIds.length) return res.status(400).json({ error: 'Select at least one product' });
+  if (!models.length) return res.status(400).json({ error: 'Select at least one AI model' });
+  const unknown = models.filter((m) => !getProvider(m));
+  if (unknown.length) return res.status(400).json({ error: `Unknown model(s): ${unknown.join(', ')}` });
+
+  const products = getProductsByIds(productIds.map(Number)).filter((p) => auditableFields(p).length);
+  if (!products.length) return res.status(400).json({ error: 'None of the selected products have data to audit against' });
+
+  const id = startAudit(products, { models });
   res.status(202).json({ id });
 });
 

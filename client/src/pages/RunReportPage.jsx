@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api.js'
+import { ModelPicker, ProductPicker } from '../components/Pickers.jsx'
 
 export default function RunReportPage() {
   const navigate = useNavigate()
@@ -10,7 +11,6 @@ export default function RunReportPage() {
   const [models, setModels] = useState(new Set(['claude', 'chatgpt', 'gemini', 'copilot']))
   const [promptCount, setPromptCount] = useState(3)
   const [custom, setCustom] = useState('')
-  const [filter, setFilter] = useState('')
   const [error, setError] = useState(null)
   const [running, setRunning] = useState(false)
 
@@ -18,16 +18,6 @@ export default function RunReportPage() {
     api.products().then(setProducts).catch((e) => setError(e.message))
     api.providers().then(setProviders).catch((e) => setError(e.message))
   }, [])
-
-  const toggle = (set, setter, id) => {
-    const next = new Set(set)
-    if (next.has(id)) next.delete(id)
-    else next.add(id)
-    setter(next)
-  }
-
-  const visible = products.filter((p) =>
-    `${p.name} ${p.brand} ${p.category}`.toLowerCase().includes(filter.toLowerCase()))
 
   const customPrompts = custom.split('\n').map((s) => s.trim()).filter(Boolean)
   const totalQueries = useMemo(
@@ -70,50 +60,10 @@ export default function RunReportPage() {
         </div>
       </div>
 
-      <div className="card">
-        <div className="card-head">
-          <h2>1. Select products</h2>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <input placeholder="Filter…" value={filter} onChange={(e) => setFilter(e.target.value)} style={{ width: 180 }} />
-            <button className="btn btn-ghost" onClick={() => setSelected(new Set(visible.map((p) => p.id)))}>Select all</button>
-            <button className="btn btn-ghost" onClick={() => setSelected(new Set())}>Clear</button>
-          </div>
-        </div>
-        <div className="select-grid">
-          {visible.map((p) => (
-            <label key={p.id} className={`select-card${selected.has(p.id) ? ' selected' : ''}`}>
-              <input type="checkbox" checked={selected.has(p.id)} onChange={() => toggle(selected, setSelected, p.id)} />
-              <strong>{p.name}</strong>
-              <div className="meta">{p.brand} · {p.category}{p.target_audience ? ` · for ${p.target_audience}` : ''}</div>
-              <div className="meta">
-                {p.rating ? `${p.rating}★` : 'no rating'} · {(p.review_count ?? 0).toLocaleString()} reviews
-                {p.price != null && ` · $${p.price.toLocaleString()}`}
-              </div>
-            </label>
-          ))}
-        </div>
-      </div>
+      <ProductPicker products={products} selected={selected} onChange={setSelected} />
 
       <div className="grid-2" style={{ marginTop: 16 }}>
-        <div className="card">
-          <div className="card-head"><h2>2. Choose AI models</h2></div>
-          <div className="chip-row">
-            {providers.map((p) => (
-              <label key={p.id} className={`chip${models.has(p.id) ? ' selected' : ''}`}>
-                <input type="checkbox" checked={models.has(p.id)} onChange={() => toggle(models, setModels, p.id)} />
-                {p.label}
-                <span className={`badge ${p.live ? 'badge-live' : 'badge-sim'}`} title={p.live ? p.model : 'No API key configured; answers are simulated'}>
-                  {p.live ? 'live' : 'simulated'}
-                </span>
-              </label>
-            ))}
-          </div>
-          {providers.some((p) => !p.live) && (
-            <p className="muted small" style={{ marginTop: 12 }}>
-              Simulated models return realistic demo answers. Add API keys in <code>server/.env</code> to query the real models.
-            </p>
-          )}
-        </div>
+        <ModelPicker providers={providers} selected={models} onChange={setModels} />
 
         <div className="card">
           <div className="card-head"><h2>3. Test prompts</h2></div>

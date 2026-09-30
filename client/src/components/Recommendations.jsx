@@ -22,7 +22,8 @@ export default function Recommendations({ items }) {
               <div className="rec-cat">{r.category}</div>
               <h3>{r.title}</h3>
               <p className="muted small" style={{ marginTop: 4 }}>{r.detail}</p>
-              {r.evidence && <div className="rec-evidence">Signal: {r.evidence}</div>}
+              {r.fix && <p className="small" style={{ marginTop: 6 }}><strong>How to fix:</strong> {r.fix}</p>}
+              {r.evidence && <div className="rec-evidence">{r.fix ? 'Evidence' : 'Signal'}: {r.evidence}</div>}
             </div>
           </div>
         )

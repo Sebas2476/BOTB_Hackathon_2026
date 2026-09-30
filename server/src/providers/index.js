@@ -20,12 +20,12 @@ export function getProvider(id) {
   return PROVIDERS.find((p) => p.id === id);
 }
 
-// Returns { text, live } — falls back to the simulator when no key is configured.
-export async function askModel(providerId, prompt, product) {
+// Returns { text, live } — falls back to `simulate` when no key is configured.
+export async function askModel(providerId, prompt, product, simulate = () => simulateAnswer(providerId, prompt, product)) {
   const provider = getProvider(providerId);
   if (!provider) throw new Error(`Unknown model: ${providerId}`);
   if (!provider.isConfigured()) {
-    return { text: simulateAnswer(providerId, prompt, product), live: false };
+    return { text: simulate(), live: false };
   }
   return { text: await provider.ask(prompt), live: true };
 }
