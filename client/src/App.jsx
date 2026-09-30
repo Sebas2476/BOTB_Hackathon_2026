@@ -15,12 +15,8 @@ export default function App() {
     <div className="app">
       <aside className="sidebar">
         <div className="brand">
-          <span className="brand-mark">
-            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
-              <path d="M2 11l3-3.5 2.5 2L13 3" stroke="#fff" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </span>
-          RankSight
+          <img className="brand-mark" src="/logo-mark.png" alt="" />
+          MAAT Intelligence
         </div>
         {NAV.map((n) => (
           <NavLink key={n.to} to={n.to} className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>

@@ -75,8 +75,8 @@ p { margin: 0; }
   padding: 20px 14px; display: flex; flex-direction: column; gap: 4px;
   position: sticky; top: 0; height: 100vh;
 }
-.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.1rem; padding: 4px 10px 20px; }
-.brand-mark { width: 28px; height: 28px; border-radius: 8px; background: var(--accent); display: grid; place-items: center; }
+.brand { display: flex; align-items: center; gap: 9px; font-weight: 700; font-size: 1.05rem; padding: 4px 6px 20px; }
+.brand-mark { flex: none; width: 32px; height: 32px; padding: 2px; border-radius: 8px; background: #fff; object-fit: contain; }
 .nav-link {
   display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px;
   color: var(--text-secondary); font-weight: 500;

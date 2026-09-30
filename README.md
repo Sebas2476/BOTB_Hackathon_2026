@@ -1,4 +1,4 @@
-# BOTB_Hackathon_2026: RankSight
+# BOTB_Hackathon_2026: MAAT Intelligence
 
 **See whether your products show up when shoppers ask AI assistants for recommendations.**
 
