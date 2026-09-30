@@ -2,6 +2,7 @@ const PRIORITY = {
   high: { label: 'High', color: 'var(--status-critical)', icon: 'M8 3v6M8 12v.5' },
   medium: { label: 'Medium', color: 'var(--status-warning)', icon: 'M4 8h8' },
   low: { label: 'Low', color: 'var(--text-muted)', icon: 'M8 7.5v4M8 4.5v.5' },
+  opportunity: { label: 'Opportunity', color: 'var(--accent)', icon: 'M8 4.5v7M4.5 8h7' },
 }
 
 export default function Recommendations({ items }) {
@@ -23,6 +24,12 @@ export default function Recommendations({ items }) {
               <h3>{r.title}</h3>
               <p className="muted small" style={{ marginTop: 4 }}>{r.detail}</p>
               {r.fix && <p className="small" style={{ marginTop: 6 }}><strong>How to fix:</strong> {r.fix}</p>}
+              {r.benefit && <p className="small muted" style={{ marginTop: 4 }}><strong>Expected benefit:</strong> {r.benefit}</p>}
+              {r.links?.length > 0 && (
+                <ul className="rec-links">
+                  {r.links.map((l, j) => <li key={j}>{l}</li>)}
+                </ul>
+              )}
               {r.evidence && <div className="rec-evidence">{r.fix ? 'Evidence' : 'Signal'}: {r.evidence}</div>}
             </div>
           </div>

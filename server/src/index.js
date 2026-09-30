@@ -7,8 +7,9 @@ import { fileURLToPath } from 'node:url';
 import { insertProducts, listProducts, countProducts, getProductsByIds, deleteProduct, getReport, listReports } from './db.js';
 import { parseCsv } from './csv.js';
 import { describeProviders, getProvider } from './providers/index.js';
-import { startReport, startAudit } from './reportRunner.js';
-import { auditableFields } from './audit.js';
+import { startReport } from './reportRunner.js';
+import { checkTarget } from './crawler.js';
+import { demoStoreRouter, robotsTxt, BASE as DEMO_STORE } from './demoStore.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const HOME_DB = path.join(__dirname, '..', 'sample-data', 'product_database.csv');
@@ -25,6 +26,10 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '5mb' }));
 app.use(express.text({ type: ['text/csv', 'text/plain'], limit: '5mb' }));
+
+app.set('trust proxy', true); // Render terminates TLS; keeps req.protocol accurate for demo-store URLs
+app.get('/robots.txt', (req, res) => res.type('text/plain').send(robotsTxt(req)));
+app.use(DEMO_STORE, demoStoreRouter());
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
@@ -72,8 +77,8 @@ app.get('/api/reports/:id', (req, res) => {
   res.json(report);
 });
 
-app.post('/api/reports', (req, res) => {
-  const { productIds = [], models = [], promptsPerProduct = 3, customPrompts = [] } = req.body ?? {};
+app.post('/api/reports', async (req, res) => {
+  const { productIds = [], models = [], promptsPerProduct = 3, customPrompts = [], siteUrl = '' } = req.body ?? {};
   if (!productIds.length) return res.status(400).json({ error: 'Select at least one product' });
   if (!models.length) return res.status(400).json({ error: 'Select at least one AI model' });
   const unknown = models.filter((m) => !getProvider(m));
@@ -86,21 +91,18 @@ app.post('/api/reports', (req, res) => {
   const custom = Array.isArray(customPrompts) ? customPrompts.slice(0, 10) : [];
   if (!count && !custom.some((c) => c.trim())) return res.status(400).json({ error: 'No prompts to run' });
 
-  const id = startReport(products, { models, promptsPerProduct: count, customPrompts: custom });
-  res.status(202).json({ id });
-});
+  // Phase 3 is optional: only public sites, or this app's own demo store.
+  let site = null;
+  if (String(siteUrl).trim()) {
+    try {
+      const { url, isPrivate } = await checkTarget(String(siteUrl).trim(), [req.get('host')], DEMO_STORE);
+      site = { siteUrl: url.href, siteIsPrivate: isPrivate };
+    } catch (err) {
+      return res.status(400).json({ error: err.message });
+    }
+  }
 
-app.post('/api/audits', (req, res) => {
-  const { productIds = [], models = [] } = req.body ?? {};
-  if (!productIds.length) return res.status(400).json({ error: 'Select at least one product' });
-  if (!models.length) return res.status(400).json({ error: 'Select at least one AI model' });
-  const unknown = models.filter((m) => !getProvider(m));
-  if (unknown.length) return res.status(400).json({ error: `Unknown model(s): ${unknown.join(', ')}` });
-
-  const products = getProductsByIds(productIds.map(Number)).filter((p) => auditableFields(p).length);
-  if (!products.length) return res.status(400).json({ error: 'None of the selected products have data to audit against' });
-
-  const id = startAudit(products, { models });
+  const id = startReport(products, { models, promptsPerProduct: count, customPrompts: custom, ...site });
   res.status(202).json({ id });
 });
 

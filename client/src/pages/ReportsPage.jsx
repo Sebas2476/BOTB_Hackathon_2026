@@ -5,6 +5,10 @@ import { api, pct, rankLabel } from '../api.js'
 // Headline number per product: accuracy for audits, visibility and average rank for ranking reports.
 function resultLabel(r) {
   if (!r.products.length) return '—'
+  if (r.type === 'full') {
+    const avg = (key) => r.products.reduce((n, p) => n + (p[key] ?? 0), 0) / r.products.length
+    return [`${pct(avg('visibilityScore'))} visible`, `${pct(avg('accuracyScore'))} accurate`, r.site && `${r.site.fails} site rules failed`].filter(Boolean).join(' · ')
+  }
   if (r.type === 'audit') {
     const acc = r.products.map((p) => p.accuracyScore ?? 0)
     return `${pct(acc.reduce((a, b) => a + b, 0) / acc.length)} accurate · ${r.products.reduce((n, p) => n + (p.flagCount ?? 0), 0)} flags`
@@ -25,12 +29,9 @@ export default function ReportsPage() {
       <div className="page-head">
         <div>
           <h1>Reports</h1>
-          <p className="muted">Every visibility report and accuracy audit you've run, newest first.</p>
+          <p className="muted">Every report you've run, newest first.</p>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <Link to="/audit" className="btn">New audit</Link>
-          <Link to="/run" className="btn btn-primary">New report</Link>
-        </div>
+        <Link to="/run" className="btn btn-primary">New report</Link>
       </div>
       <div className="card">
         {reports.length === 0 ? (
@@ -45,7 +46,7 @@ export default function ReportsPage() {
                 {reports.map((r) => (
                   <tr key={r.id}>
                     <td><Link to={`/reports/${r.id}`}><strong>#{r.id}</strong></Link><div className="muted small">{new Date(r.created_at + 'Z').toLocaleString()}</div></td>
-                    <td className="small">{r.type === 'audit' ? 'Accuracy audit' : 'Visibility'}</td>
+                    <td className="small">{{ full: 'Full report', audit: 'Accuracy audit', ranking: 'Visibility' }[r.type]}</td>
                     <td>{r.config.productNames.join(', ')}</td>
                     <td className="small">{r.config.models.length} models</td>
                     <td className="num small">{resultLabel(r)}</td>

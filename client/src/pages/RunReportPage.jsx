@@ -11,6 +11,8 @@ export default function RunReportPage() {
   const [models, setModels] = useState(new Set(['claude', 'chatgpt', 'gemini', 'copilot']))
   const [promptCount, setPromptCount] = useState(3)
   const [custom, setCustom] = useState('')
+  const [crawl, setCrawl] = useState(true)
+  const [siteUrl, setSiteUrl] = useState(`${window.location.origin}/demo-store/`)
   const [error, setError] = useState(null)
   const [running, setRunning] = useState(false)
 
@@ -34,6 +36,7 @@ export default function RunReportPage() {
         models: [...models],
         promptsPerProduct: promptCount,
         customPrompts,
+        siteUrl: crawl ? siteUrl.trim() : '',
       })
       navigate(`/reports/${id}`)
     } catch (e) {
@@ -55,8 +58,11 @@ export default function RunReportPage() {
     <>
       <div className="page-head">
         <div>
-          <h1>Run a visibility report</h1>
-          <p className="muted">Pick products and AI models. We ask each model real shopper questions and check where your product ranks.</p>
+          <h1>Run a report</h1>
+          <p className="muted">
+            One report, three phases: where AI assistants rank your products, whether what they say about them is
+            accurate, and how your website presents them, with Maat's AEO &amp; GEO recommendations.
+          </p>
         </div>
       </div>
 
@@ -82,12 +88,33 @@ export default function RunReportPage() {
         </div>
       </div>
 
+      <div className="card" style={{ marginTop: 16 }}>
+        <div className="card-head">
+          <h2>4. Client website</h2>
+          <label className="small" style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+            <input type="checkbox" checked={crawl} onChange={(e) => setCrawl(e.target.checked)} style={{ width: 'auto' }} />
+            Crawl the website
+          </label>
+        </div>
+        <label className="field">
+          Website address
+          <input value={siteUrl} disabled={!crawl} onChange={(e) => setSiteUrl(e.target.value)} placeholder="https://www.example.com/" />
+        </label>
+        <p className="muted small" style={{ marginTop: 8 }}>
+          The crawler follows Googlebot's robots.txt rules, reads each page's text and structured data, and asks Google
+          PageSpeed Insights for its view. Maat checks the findings against the AEO/GEO rulebook and your product database.
+          The address above is the <a href="/demo-store/" target="_blank" rel="noreferrer">demo store</a> built from your
+          product database.
+        </p>
+      </div>
+
       {error && <div className="alert alert-error" style={{ marginTop: 16 }}>{error}</div>}
 
       <div className="card run-bar">
         <span className="muted">
           <strong style={{ color: 'var(--text-primary)' }}>{selected.size}</strong> product(s) ×{' '}
-          <strong style={{ color: 'var(--text-primary)' }}>{models.size}</strong> model(s) = {totalQueries} AI queries
+          <strong style={{ color: 'var(--text-primary)' }}>{models.size}</strong> model(s) = {totalQueries + selected.size * models.size} AI queries
+          {crawl && siteUrl.trim() ? ' + website crawl' : ''}
         </span>
         <button className="btn btn-primary btn-lg" disabled={!selected.size || !models.size || !totalQueries || running} onClick={run}>
           {running ? 'Starting…' : 'Run report →'}

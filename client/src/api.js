@@ -26,7 +26,6 @@ export const api = {
   reports: () => request('/reports'),
   report: (id) => request(`/reports/${id}`),
   runReport: (config) => request('/reports', json('POST', config)),
-  runAudit: (config) => request('/audits', json('POST', config)),
 }
 
 export const pct = (x) => (x == null ? '—' : `${Math.round(x * 100)}%`)

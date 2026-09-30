@@ -2,15 +2,19 @@
 
 **See whether your products show up when shoppers ask AI assistants for recommendations.**
 
-A business uploads its product catalog, selects products, and runs a report. The agent sends
-realistic shopper prompts (e.g. *"What are the top 5 laptops for students?"*) to **Claude, ChatGPT,
-Gemini, and Copilot**, parses each ranked answer, checks whether the product (and the brand) made
-the list and at what position, and then recommends how to rank higher.
+A business picks products from its catalog and runs **one report with three phases**:
 
-It also runs an **AI accuracy audit**: it asks each assistant what it knows about a product, cross-references
-every claim (price, availability, condition, specs, features, rating) against your own product database, and
-flags anything **missing** or **inaccurate**, with an AEO (answer engine optimization) explanation of why the
-assistant got it wrong and how to fix it, plus a brief AI overview per product.
+1. **Ranking results**: realistic shopper prompts (e.g. *"What are the top 5 laptops for students?"*) go to
+   **Claude, ChatGPT, Gemini, and Copilot**; each ranked answer is parsed to see whether the product (and brand)
+   made the list and at what position.
+2. **Accuracy audit**: each assistant is asked about each product, the way a shopper would, and every claim
+   (price, availability, condition, specs, features, rating) is cross-referenced against the product database.
+   Missing and inaccurate facts are flagged with an AEO explanation.
+3. **Website crawl & Maat**: the client's website is crawled following Googlebot's robots.txt rules, and Google
+   PageSpeed Insights (Lighthouse) supplies Google's rendered view. **Maat**, MAAT's AEO & GEO expert, checks the
+   crawl against the 48-rule AEO/GEO rulebook (`server/sample-data/aeo_geo_rulebook.csv`) using the product
+   database as the manufacturer's truth, links site problems to what the assistants got wrong in phases 1–2, and
+   recommends prioritized fixes.
 
 ## Quick start
 
@@ -21,11 +25,27 @@ npm run dev          # API on :3001, web app on http://localhost:5173
 
 1. **Products**: the home database (`server/sample-data/product_database.csv`, 20 products) loads automatically
    when the database is empty, or via **Load home database**. You can also upload your own CSV/JSON or add a product manually.
-2. **Run report**: pick products and models, choose how many test prompts to run, and optionally add custom ones.
-3. **Audit accuracy**: pick products and models; each model is asked about each product and its answer is fact-checked.
-4. **Reports**: for visibility reports, see visibility score, average and best rank, mention rate per model, a prompt × model
-   rank heatmap, the competitors that ranked instead, prioritized recommendations, and the raw AI answers. For audits,
-   see the accuracy score, a field × model fact-check grid, AEO-explained flags, and the AI overview.
+2. **Run report**: pick products and models, choose how many test prompts to run, optionally add custom ones, and
+   enter the client's website (defaults to the built-in demo store).
+3. **Reports**: one page per report, in order: ranking (visibility, ranks, heatmap, competitors), accuracy audit
+   (fact-check grid, AEO flags, AI overview), then the website section (Maat's overview and recommendations, the
+   product's page vs. the database, rulebook results, Google's view, and the crawl log).
+
+### Demo store
+
+`/demo-store` is a small storefront generated from the product database so the crawl has a site to inspect. Most
+pages are correct; a set of deliberate AEO/GEO mistakes (wrong price, stale availability, noindex, wrong canonical,
+rating markup mismatch, orphan page, JS-only page, crawler blocked in robots.txt, and so on) is listed in
+`DEFECTS` in `server/src/demoStore.js`. Google PageSpeed can only reach public URLs, so Google's view appears when
+the report runs on the deployed site.
+
+### Maat
+
+With `ANTHROPIC_API_KEY` set, Maat uses Claude with the rulebook's guidance as its expert context, writes the
+overview and recommendations, and judges the rules that need reading comprehension (use cases, comparisons, claim
+sources). Without a key, Maat runs in rulebook mode: recommendations come straight from each failing rule's
+correction, and those semantic rules stay "Not assessed". Either way Maat follows the rulebook's result states
+(Pass, Fail, Needs verification, Opportunity, Not applicable, Not assessed) and never prescribes what GUIDE-09 excludes.
 
 ### Real vs. simulated models
 
@@ -65,8 +85,13 @@ server/  Express API, SQLite via Node's built-in node:sqlite (Node 22.5+)
   src/providers/          Claude / OpenAI / Gemini / Azure adapters + simulator
   src/analyzer.js         parses numbered lists, fuzzy-matches the product, extracts competitors
   src/recommendations.js  ranking-signal rules → prioritized recommendations
-  src/reportRunner.js     runs prompts × models concurrently, aggregates stats; also runs audits
+  src/reportRunner.js     runs the three phases (ranking, accuracy audit, website + Maat) into one report
   src/audit.js            audit prompt, answer parsing, field-by-field fact check, AEO flags + overview
+  src/crawler.js          website crawl (Googlebot robots rules), page extraction, Google PageSpeed view
+  src/siteAudit.js        evaluates the crawl against the rulebook, with the product database as truth
+  src/maat.js             Maat: AEO/GEO expert recommendations (Claude or rulebook mode)
+  src/rulebook.js         loads the AEO/GEO rulebook: rules, sources, guidance
+  src/demoStore.js        demo client storefront at /demo-store with deliberate defects
 ```
 
 ### API
@@ -77,9 +102,9 @@ server/  Express API, SQLite via Node's built-in node:sqlite (Node 22.5+)
 | POST | `/api/products/home` | (re)load the home database; existing SKUs are skipped |
 | DELETE | `/api/products/:id` | remove a product |
 | GET | `/api/providers` | models and whether each is live or simulated |
-| POST | `/api/reports` | `{ productIds, models, promptsPerProduct, customPrompts }` → `{ id }` (runs async) |
-| POST | `/api/audits` | `{ productIds, models }` → `{ id }` (runs async; stored as a report with `type: "audit"`) |
-| GET | `/api/reports`, `/api/reports/:id` | list / poll a report or audit |
+| POST | `/api/reports` | `{ productIds, models, promptsPerProduct, customPrompts, siteUrl }` → `{ id }` (runs all phases async; `siteUrl` optional) |
+| GET | `/api/reports`, `/api/reports/:id` | list / poll a report |
+| GET | `/demo-store/...`, `/robots.txt` | demo client storefront and its robots.txt |
 
 ## Deploying to Render
 

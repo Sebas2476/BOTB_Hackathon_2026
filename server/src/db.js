@@ -49,6 +49,7 @@ function addColumn(table, column, definition) {
 addColumn('products', 'sku', 'TEXT');
 addColumn('products', 'specs', 'TEXT');
 addColumn('reports', 'type', "TEXT NOT NULL DEFAULT 'ranking'");
+addColumn('reports', 'phase', 'TEXT');
 
 const PRODUCT_FIELDS = [
   'name', 'brand', 'category', 'price', 'rating', 'review_count',
@@ -183,9 +184,9 @@ export function createReport(config, total, type = 'ranking') {
   return Number(lastInsertRowid);
 }
 
-export function updateReportProgress(id, done, results) {
-  db.prepare('UPDATE reports SET progress_done = ?, results = ? WHERE id = ?')
-    .run(done, JSON.stringify(results), id);
+export function updateReportProgress(id, done, results, phase = null) {
+  db.prepare('UPDATE reports SET progress_done = ?, results = ?, phase = ? WHERE id = ?')
+    .run(done, JSON.stringify(results), phase, id);
 }
 
 export function completeReport(id, results, summary) {
@@ -207,19 +208,25 @@ export function getReport(id) {
 
 export function listReports() {
   return db.prepare(`
-    SELECT id, type, status, config, progress_done, progress_total, summary, created_at, completed_at
+    SELECT id, type, status, phase, config, progress_done, progress_total, summary, created_at, completed_at
     FROM reports ORDER BY id DESC
   `).all().map((r) => {
     const parsed = parseReport(r);
     // Keep the list payload light: only headline numbers per product.
-    const products = parsed.summary?.products?.map((p) => ({
-      productId: p.product.id,
-      name: p.product.name,
-      visibilityScore: p.visibilityScore,
-      avgRank: p.avgRank,
-      accuracyScore: p.accuracyScore,
-      flagCount: p.flags?.length,
-    })) ?? [];
-    return { ...parsed, summary: undefined, products };
+    const products = parsed.summary?.products?.map((p) => {
+      const ranking = parsed.type === 'full' ? p.ranking : p;
+      const audit = parsed.type === 'full' ? p.audit : p;
+      return {
+        productId: p.product.id,
+        name: p.product.name,
+        visibilityScore: ranking?.visibilityScore,
+        avgRank: ranking?.avgRank,
+        accuracyScore: audit?.accuracyScore,
+        flagCount: audit?.flags?.length,
+      };
+    }) ?? [];
+    const site = parsed.summary?.site;
+    const siteHeadline = site && !site.error ? { fails: site.counts?.Fail ?? 0, recommendations: site.maat?.recommendations?.length ?? 0 } : null;
+    return { ...parsed, summary: undefined, products, site: siteHeadline };
   });
 }

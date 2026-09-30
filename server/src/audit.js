@@ -202,12 +202,12 @@ const AEO = {
   specs: {
     inaccurate: 'When a spec is not stated clearly in one authoritative place, models infer it from similar products, older model years, or the category norm, and state the guess with confidence.',
     missing: 'The spec is not written anywhere answer engines can extract it, such as a text spec table or an FAQ, so the model cannot answer spec questions about this product.',
-    fix: 'Publish an HTML spec table (not a PDF or image) using the same field names shoppers search for, mirror it in schema.org additionalProperty, and add direct Q&A lines such as "How much RAM does it have? 8 GB." Keep retailer listings identical so every source agrees.',
+    fix: 'Publish an HTML spec table (not a PDF or image) with units and test conditions, using the same field names shoppers search for, and keep retailer listings identical so every source agrees.',
   },
   features: {
     inaccurate: 'Models fill feature gaps with what is typical for the category (for example assuming 5G, noise cancellation, or water resistance). Without an explicit statement either way, the typical answer wins.',
     missing: 'Nothing the model can read says whether the product has this feature, so it leaves it out of comparisons and "which X has Y" answers.',
-    fix: 'State features as explicit yes/no answers ("Noise cancellation: No", "Water resistance: IPX4") in an FAQ block with schema.org FAQPage markup, and list them the same way on every retailer page.',
+    fix: 'State features as explicit yes/no values ("Noise cancellation: No", "Water resistance: IPX4") in the product page\'s text spec table, and list them the same way on every retailer page.',
   },
   reputation: {
     inaccurate: 'Ratings and review counts are aggregated from different retailers and snapshots, so models often quote an outdated or partial figure.',
@@ -343,7 +343,7 @@ export function overviewText(s) {
     parts.push(`The most damaging error is the ${field}: your database says ${worst.ours}, but ${said}.`);
   }
   if (s.flags.length) {
-    parts.push('From an AEO standpoint, the fix is to publish these facts in one structured, crawlable source (spec table, schema.org Product/Offer/FAQ markup, synced merchant feeds) so answer engines quote your data instead of guessing.');
+    parts.push('From an AEO standpoint, the fix is to publish these facts in one consistent, crawlable source (a text spec table, schema.org Product/Offer markup that matches the visible page, and synced merchant feeds) so answer engines quote your data instead of guessing.');
   } else {
     parts.push('Every checked fact matched. Keep structured data and merchant feeds current and re-run this audit after price or spec changes.');
   }
