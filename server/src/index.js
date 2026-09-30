@@ -4,7 +4,7 @@ import cors from 'cors';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { insertProducts, listProducts, countProducts, getProductsByIds, deleteProduct, getReport, listReports } from './db.js';
+import { insertProducts, listProducts, countProducts, getProductsByIds, deleteProduct, getReport, listReports, saveContactRequest } from './db.js';
 import { parseCsv } from './csv.js';
 import { describeProviders, getProvider } from './providers/index.js';
 import { startReport } from './reportRunner.js';
@@ -30,6 +30,7 @@ app.use(express.text({ type: ['text/csv', 'text/plain'], limit: '5mb' }));
 app.set('trust proxy', true); // Render terminates TLS; keeps req.protocol accurate for demo-store URLs
 app.get('/robots.txt', (req, res) => res.type('text/plain').send(robotsTxt(req)));
 app.use(DEMO_STORE, demoStoreRouter());
+app.get(['/demo-store', '/demo-store/*rest'], (req, res) => res.redirect(301, req.originalUrl.replace('/demo-store', DEMO_STORE)));
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
@@ -104,6 +105,19 @@ app.post('/api/reports', async (req, res) => {
 
   const id = startReport(products, { models, promptsPerProduct: count, customPrompts: custom, ...site });
   res.status(202).json({ id });
+});
+
+// Homepage "Request demo" / "Sign in" form submissions, kept for the MAAT team.
+app.post('/api/demo-requests', (req, res) => {
+  const clean = (v, max = 200) => String(v ?? '').trim().slice(0, max);
+  const request = {
+    kind: ['demo', 'audit', 'signin'].includes(req.body?.kind) ? req.body.kind : 'demo',
+    name: clean(req.body?.name), email: clean(req.body?.email), company: clean(req.body?.company), category: clean(req.body?.category) || null,
+  };
+  if (!request.name || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(request.email) || !request.company) {
+    return res.status(400).json({ error: 'Name, a valid work email, and company are required' });
+  }
+  res.status(201).json({ id: saveContactRequest(request) });
 });
 
 // --- Web app (production) ---------------------------------------------------

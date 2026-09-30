@@ -48,17 +48,9 @@ export function ModelPicker({ providers, selected, onChange, title = '2. Choose 
           <label key={p.id} className={`chip${selected.has(p.id) ? ' selected' : ''}`}>
             <input type="checkbox" checked={selected.has(p.id)} onChange={() => onChange(toggleIn(selected, p.id))} />
             {p.label}
-            <span className={`badge ${p.live ? 'badge-live' : 'badge-sim'}`} title={p.live ? p.model : 'No API key configured; answers are simulated'}>
-              {p.live ? 'live' : 'simulated'}
-            </span>
           </label>
         ))}
       </div>
-      {providers.some((p) => !p.live) && (
-        <p className="muted small" style={{ marginTop: 12 }}>
-          Simulated models return realistic demo answers. Add API keys in <code>server/.env</code> to query the real models.
-        </p>
-      )}
     </div>
   )
 }

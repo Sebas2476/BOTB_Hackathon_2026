@@ -109,9 +109,6 @@ input:focus, textarea:focus, select:focus { outline: 2px solid var(--accent); ou
 .alert-ok { border-color: var(--status-good); }
 
 .badge { display: inline-flex; align-items: center; gap: 5px; font-size: 0.75rem; font-weight: 600; padding: 2px 8px; border-radius: 99px; background: var(--surface-2); color: var(--text-secondary); white-space: nowrap; }
-.badge-live::before, .badge-sim::before { content: ''; width: 7px; height: 7px; border-radius: 50%; }
-.badge-live::before { background: var(--status-good); }
-.badge-sim::before { background: var(--text-muted); }
 
 /* ---- Tables ---- */
 .table-wrap { overflow-x: auto; }

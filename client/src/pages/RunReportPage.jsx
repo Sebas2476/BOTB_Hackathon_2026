@@ -12,7 +12,7 @@ export default function RunReportPage() {
   const [promptCount, setPromptCount] = useState(3)
   const [custom, setCustom] = useState('')
   const [crawl, setCrawl] = useState(true)
-  const [siteUrl, setSiteUrl] = useState(`${window.location.origin}/demo-store/`)
+  const [siteUrl, setSiteUrl] = useState(`${window.location.origin}/store/`)
   const [error, setError] = useState(null)
   const [running, setRunning] = useState(false)
 
@@ -103,8 +103,6 @@ export default function RunReportPage() {
         <p className="muted small" style={{ marginTop: 8 }}>
           The crawler follows Googlebot's robots.txt rules, reads each page's text and structured data, and asks Google
           PageSpeed Insights for its view. Maat checks the findings against the AEO/GEO rulebook and your product database.
-          The address above is the <a href="/demo-store/" target="_blank" rel="noreferrer">demo store</a> built from your
-          product database.
         </p>
       </div>
 

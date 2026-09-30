@@ -39,7 +39,6 @@ export default function AuditSection({ s, models, labels, results }) {
               label: bm.label,
               value: bm.accuracy ?? 0,
               display: bm.error ? 'error' : pct(bm.accuracy),
-              badge: !bm.live && <span className="badge badge-sim" title="Simulated">sim</span>,
               tip: (
                 <>
                   <strong>{bm.label}</strong>

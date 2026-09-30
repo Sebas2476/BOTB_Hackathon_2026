@@ -12,8 +12,8 @@ import { parseCsv } from './csv.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rows = parseCsv(fs.readFileSync(path.join(__dirname, '..', 'sample-data', 'product_database.csv'), 'utf8'));
 
-export const BASE = '/demo-store';
-const STORE = 'Sample Electronics Store';
+export const BASE = '/store';
+const STORE = 'Brightline Electronics';
 
 const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const catSlug = (c) => `${slug(c)}${/s$/i.test(c) ? '' : 's'}`;
@@ -83,7 +83,7 @@ ${head}
 <main>
 ${body}
 </main>
-<footer><small>Demo storefront for MAAT Intelligence. All products are fictional.</small></footer>
+<footer><small>© 2026 Brightline Electronics. Prices in USD. Free returns within 30 days.</small></footer>
 </body>
 </html>`;
 }
@@ -140,7 +140,7 @@ function productBody(origin, p, d) {
 <h1>${esc(p.name)}</h1>
 ${img}
 <p class="price">$${price.toFixed(2)} <small>USD</small></p>
-<p><strong>${AVAIL_LABEL[avail]}</strong>${d.hideCondition ? '' : ` · Condition: ${p.condition === 'refurbished' ? 'Refurbished' : 'New'}`} · Sold by ${esc(p.seller)}</p>
+<p><strong>${AVAIL_LABEL[avail]}</strong>${d.hideCondition ? '' : ` · Condition: ${p.condition === 'refurbished' ? 'Refurbished' : 'New'}`} · Sold by ${STORE}</p>
 <p>Shipping: ${money(p.shipping_cost_usd) ? `$${money(p.shipping_cost_usd).toFixed(2)}` : 'Free'}${p.delivery_days_min ? `, arrives in ${p.delivery_days_min}–${p.delivery_days_max} business days` : ''}.
  ${d.returnText ?? `${p.return_window_days}-day returns`} (<a href="${BASE}/policies/returns">return policy</a>).
  ${d.warrantyText ?? `${p.warranty_months}-month limited warranty`}.</p>

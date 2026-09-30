@@ -18,7 +18,6 @@ export default function FullReport({ report }) {
   const entry = entries[Math.min(active, entries.length - 1)]
   const models = report.config.models
   const labels = Object.fromEntries(models.map((m) => [m, entry.ranking.byModel[m].label]))
-  const anySimulated = models.some((m) => !entry.ranking.byModel[m].live)
   const site = report.summary.site
 
   return (
@@ -30,7 +29,6 @@ export default function FullReport({ report }) {
           <p className="muted">
             {new Date(report.created_at + 'Z').toLocaleString()} · {models.map((m) => labels[m]).join(', ')}
             {report.config.siteUrl && <> · <a href={report.config.siteUrl} target="_blank" rel="noreferrer">{report.config.siteUrl}</a></>}
-            {anySimulated && <span className="badge badge-sim" style={{ marginLeft: 8 }}>includes simulated models</span>}
           </p>
         </div>
         <Link to="/run" className="btn">Run another</Link>

@@ -47,7 +47,7 @@ export default function SiteSection({ site, product }) {
           <img src="/logo-wings.png" alt="" className="maat-avatar" />
           <div>
             <h2>Maat</h2>
-            <p className="muted small">AEO &amp; GEO expert · {maat.mode === 'claude' ? 'powered by Claude' : 'rulebook mode (add a Claude key for full analysis)'}</p>
+            <p className="muted small">AEO &amp; GEO expert</p>
           </div>
         </div>
         <p style={{ marginTop: 12 }}>{maat.overview}</p>

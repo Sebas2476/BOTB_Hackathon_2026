@@ -23,6 +23,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': 'http://localhost:3001',
+      '/store': 'http://localhost:3001',
       '/demo-store': 'http://localhost:3001',
       '/robots.txt': 'http://localhost:3001',
     },

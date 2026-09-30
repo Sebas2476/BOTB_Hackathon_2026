@@ -687,7 +687,7 @@ dialog::backdrop{background:rgba(2,6,16,.72)}
         <div class="filters" id="rng"></div>
       </div>
       <svg class="rvsvg" id="rv" viewBox="0 0 640 300" role="img" aria-label="Stacked bar chart of revenue exposure by product family"></svg>
-      <p class="note">Sample figures. In MAAT, exposure is estimated from your sales, traffic and return data combined with how often AI platforms are asked about each product.</p>
+      <p class="note">In MAAT, exposure is estimated from your sales, traffic and return data combined with how often AI platforms are asked about each product.</p>
     </div>
   </div>
 </section>
@@ -841,7 +841,7 @@ dialog::backdrop{background:rgba(2,6,16,.72)}
       <div id="fres"><h4>Resources</h4><ul><li><a href="#how">How MAAT works</a></li><li><a href="#governance">Governance</a></li><li><a href="#industries">Industries</a></li><li><a href="/app/run">Run an audit</a></li></ul></div>
       <div id="fco"><h4>Company</h4><ul><li><a href="#top">About MAAT</a></li><li><button class="btn btn-g btn-sm" data-open="demo" style="margin-top:2px">Contact us</button></li></ul></div>
     </div>
-    <div class="fb">© 2026 MAAT Intelligence. Product names, figures and customers shown on this page are illustrative samples.</div>
+    <div class="fb">© 2026 MAAT Intelligence. All rights reserved.</div>
   </div>
 </footer>
 
@@ -850,16 +850,16 @@ dialog::backdrop{background:rgba(2,6,16,.72)}
     <form id="dform" method="dialog" onsubmit="return false">
       <h3 id="dtitle">Request a demo</h3>
       <p id="dsub">Tell us about your products and we'll set up a walkthrough.</p>
-      <label>Full name<input required autocomplete="name"></label>
-      <label>Work email<input type="email" required autocomplete="email"></label>
-      <label>Company<input required autocomplete="organization"></label>
+      <label>Full name<input name="name" required autocomplete="name"></label>
+      <label>Work email<input name="email" type="email" required autocomplete="email"></label>
+      <label>Company<input name="company" required autocomplete="organization"></label>
       <label id="dcatl">Product category
-        <select><option>Building materials</option><option>Manufacturing</option><option>Automotive parts</option><option>Electronics</option><option>Industrial equipment</option><option>Home improvement</option><option>Appliances</option><option>Medical devices</option><option>Consumer products</option></select></label>
+        <select name="category"><option>Building materials</option><option>Manufacturing</option><option>Automotive parts</option><option>Electronics</option><option>Industrial equipment</option><option>Home improvement</option><option>Appliances</option><option>Medical devices</option><option>Consumer products</option></select></label>
       <div class="acts"><button type="button" class="btn btn-g btn-sm" id="dcancel">Cancel</button><button type="submit" class="btn btn-p btn-sm" id="dsubmit">Request demo</button></div>
     </form>
     <div class="done">
       <h3>Request received</h3>
-      <p>This is a design preview, so nothing was sent. In the live site this is where your request would go to the MAAT team.</p>
+      <p id="dthanks">Thanks. The MAAT team will follow up at the email you provided.</p>
       <div class="acts"><button type="button" class="btn btn-p btn-sm" id="dclose">Close</button></div>
     </div>
   </div>
@@ -882,7 +882,7 @@ $$('#menu a').forEach(a=>a.addEventListener('click',()=>{menu.classList.remove('
 const SC=[
  {p:'ChatGPT',q:'Can this shower base be cut to fit?',a:'Yes, the product can be trimmed during installation.',t:'This product should not be cut or modified.',src:'Installation Guide v4.2, page 3',risk:'High',cls:'high',imp:'Installation failure / product return',act:'Update retailer FAQ and product documentation.'},
  {p:'Gemini',q:'How thick is the Carrara wall panel?',a:'The Carrara wall panel is 8 mm thick.',t:'Carrara wall panel thickness is 6 mm.',src:'Engineering drawing WP-114, rev C',risk:'Medium',cls:'medium',imp:'Trim mismatch / product return',act:'Correct the distributor spec sheet.'},
- {p:'Perplexity',q:'Will the 48 × 36 base work with my existing drain?',a:'Yes, it works with any standard 2-inch drain.',t:'Compatible only with center-drain assemblies from the same series.',src:'Compatibility matrix v7',risk:'High',cls:'high',imp:'Leaks / installer callbacks',act:'Revise the compatibility table on retailer listings.'}
+ {p:'Copilot',q:'Will the 48 × 36 base work with my existing drain?',a:'Yes, it works with any standard 2-inch drain.',t:'Compatible only with center-drain assemblies from the same series.',src:'Compatibility matrix v7',risk:'High',cls:'high',imp:'Leaks / installer callbacks',act:'Revise the compatibility table on retailer listings.'}
 ];
 function renderConsole(i){
   const s=SC[i], c=$('#console'), b=$('#cbody');
@@ -921,7 +921,7 @@ const STEPS=[
  {t:'Build Product Truth',d:'MAAT creates a verified digital profile for every product using manufacturer-approved information.',tag:'Owned by product and engineering teams',
   v:()=>['Specifications','Dimensions','Compatibility','Certifications','Warranty','Approved claims'].map(x=>`<div class="r"><span style="color:var(--ok)">${ic('check',16)}</span>${x}<span class="g">Approved</span></div>`).join('')},
  {t:'Monitor AI Platforms',d:'MAAT continuously tests relevant questions across AI platforms.',tag:'Runs on a schedule you set',
-  v:()=>[['ChatGPT',96],['Gemini',88],['Claude',74],['Perplexity',91]].map(x=>`<div class="r"><span style="width:90px">${x[0]}</span><div class="bar"><i style="width:${x[1]}%"></i></div><span class="g mono">${Math.round(x[1]*3.21)} q</span></div>`).join('')+`<div class="r"><span class="mute">Questions tested this week</span><span class="g mono">1,284</span></div>`},
+  v:()=>[['ChatGPT',96],['Gemini',88],['Claude',74],['Copilot',91]].map(x=>`<div class="r"><span style="width:90px">${x[0]}</span><div class="bar"><i style="width:${x[1]}%"></i></div><span class="g mono">${Math.round(x[1]*3.21)} q</span></div>`).join('')+`<div class="r"><span class="mute">Questions tested this week</span><span class="g mono">1,284</span></div>`},
  {t:'Detect Errors',d:'AI responses are automatically compared against verified manufacturer data.',tag:'Field-by-field comparison',
   v:()=>`<div class="cmp"><div><small>AI response</small>Can be <mark>trimmed to fit</mark> during installation.</div><div><small>Verified data</small>Installation: <mark class="g">do not cut or modify</mark>.</div></div><div style="margin-top:12px"><span class="pill p-crit">Mismatch detected</span></div>`},
  {t:'Diagnose the Source',d:'MAAT identifies websites, product pages, or information sources that may be causing the incorrect answer.',tag:'Ranked by likely influence',
@@ -946,13 +946,13 @@ const PL=[
  {n:'ChatGPT',c:'#3D8BFF',s:[76,78,79,82,83,85,86,87,88,89,90,90],iss:8,hi:2,q:321,rev:71000},
  {n:'Gemini',c:'#9CC4FF',s:[79,80,82,83,85,86,87,89,90,90,91,91],iss:5,hi:0,q:321,rev:33000},
  {n:'Claude',c:'#2BC48A',s:[84,85,87,88,89,90,91,92,93,94,94,95],iss:3,hi:0,q:321,rev:12000},
- {n:'Perplexity',c:'#E5A42A',s:[72,75,77,79,82,84,86,88,90,91,92,92],iss:7,hi:2,q:321,rev:68000}
+ {n:'Copilot',c:'#E5A42A',s:[72,75,77,79,82,84,86,88,90,91,92,92],iss:7,hi:2,q:321,rev:68000}
 ];
 const AVG=PL[0].s.map((_,i)=>PL.reduce((a,p)=>a+p.s[i],0)/4);
 const ISS=[
  ['Shower Base 60x32','Incorrect cutting instructions','ChatGPT','High'],
  ['Wall Panel Carrara','Wrong thickness','Gemini','Medium'],
- ['Shower Base 48x36','Wrong drain compatibility','Perplexity','High'],
+ ['Shower Base 48x36','Wrong drain compatibility','Copilot','High'],
  ['Wall Panel Slate','Discontinued color still recommended','ChatGPT','Medium'],
  ['Curbless Base 60x34','Outdated warranty term','Claude','Low']
 ];
@@ -1163,12 +1163,17 @@ $('#inds').innerHTML=INDS.map(x=>`<article class="card ind"><div class="art"><sv
 
 /* DIALOG */
 const dlg=$('#dlg');
-const DM={audit:['Run your first MAAT audit','Share a few details and we\u2019ll test how AI platforms describe your products.','Request audit'],demo:['Request a demo','Tell us about your products and we\u2019ll set up a walkthrough.','Request demo'],signin:['Sign in','Customer sign-in is not part of this preview. Enter your details to request access.','Request access']};
+const DM={audit:['Run your first MAAT audit','Share a few details and we\u2019ll test how AI platforms describe your products.','Request audit'],demo:['Request a demo','Tell us about your products and we\u2019ll set up a walkthrough.','Request demo'],signin:['Sign in','Enter your details to request access.','Request access']};
 function openD(k){const m=DM[k]||DM.demo;$('#dtitle').textContent=m[0];$('#dsub').textContent=m[1];$('#dsubmit').textContent=m[2];$('#dl').classList.remove('sent');$('#dform').reset();dlg.showModal()}
 $$('[data-open]').forEach(b=>b.addEventListener('click',()=>openD(b.dataset.open)));
 $('#dcancel').addEventListener('click',()=>dlg.close());
 $('#dclose').addEventListener('click',()=>dlg.close());
-$('#dform').addEventListener('submit',e=>{e.preventDefault();$('#dl').classList.add('sent')});
+let dkind='demo';
+$$('[data-open]').forEach(b=>b.addEventListener('click',()=>{dkind=b.dataset.open}));
+$('#dform').addEventListener('submit',async e=>{e.preventDefault();const f=$('#dform'),btn=$('#dsubmit');btn.disabled=true;
+  try{const r=await fetch('/api/demo-requests',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({...Object.fromEntries(new FormData(f)),kind:dkind})});if(!r.ok)throw new Error();$('#dl').classList.add('sent')}
+  catch{$('#dsub').textContent='Something went wrong sending your request. Please try again.'}
+  finally{btn.disabled=false}});
 dlg.addEventListener('click',e=>{if(e.target===dlg)dlg.close()});
 })();
 </script>

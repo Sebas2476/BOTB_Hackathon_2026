@@ -9,7 +9,6 @@ export default function AuditReport({ report }) {
   const s = summaries[Math.min(active, summaries.length - 1)]
   const models = report.config.models
   const labels = Object.fromEntries(models.map((m) => [m, s.byModel[m].label]))
-  const anySimulated = models.some((m) => !s.byModel[m].live)
 
   return (
     <>
@@ -19,7 +18,6 @@ export default function AuditReport({ report }) {
           <h1 style={{ marginTop: 4 }}>AI accuracy audit</h1>
           <p className="muted">
             {new Date(report.created_at + 'Z').toLocaleString()} · {models.map((m) => labels[m]).join(', ')}
-            {anySimulated && <span className="badge badge-sim" style={{ marginLeft: 8 }}>includes simulated models</span>}
           </p>
         </div>
         <Link to="/audit" className="btn">Run another</Link>

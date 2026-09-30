@@ -41,6 +41,18 @@ db.exec(`
   );
 `);
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS contact_requests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    kind TEXT NOT NULL,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    company TEXT NOT NULL,
+    category TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+`);
+
 // Columns added after the first release; older local databases get them here.
 function addColumn(table, column, definition) {
   const exists = db.prepare(`PRAGMA table_info(${table})`).all().some((c) => c.name === column);
@@ -229,4 +241,11 @@ export function listReports() {
     const siteHeadline = site && !site.error ? { fails: site.counts?.Fail ?? 0, recommendations: site.maat?.recommendations?.length ?? 0 } : null;
     return { ...parsed, summary: undefined, products, site: siteHeadline };
   });
+}
+
+export function saveContactRequest({ kind, name, email, company, category }) {
+  const { lastInsertRowid } = db
+    .prepare('INSERT INTO contact_requests (kind, name, email, company, category) VALUES (?, ?, ?, ?, ?)')
+    .run(kind, name, email, company, category ?? null);
+  return Number(lastInsertRowid);
 }

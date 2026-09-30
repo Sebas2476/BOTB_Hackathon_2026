@@ -56,7 +56,6 @@ export default function RankingSection({ s, models, labels, results }) {
                 label: bm.label,
                 value: bm.mentionRate,
                 display: pct(bm.mentionRate),
-                badge: !bm.live && <span className="badge badge-sim" title="Simulated">sim</span>,
                 tip: (
                   <>
                     <strong>{bm.label}</strong>

@@ -31,14 +31,14 @@ user accounts yet, so Sign In goes straight in. Old links such as `/reports/5` r
 1. **Products**: the home database (`server/sample-data/product_database.csv`, 20 products) loads automatically
    when the database is empty, or via **Load home database**. You can also upload your own CSV/JSON or add a product manually.
 2. **Run report**: pick products and models, choose how many test prompts to run, optionally add custom ones, and
-   enter the client's website (defaults to the built-in demo store).
+   enter the client's website (defaults to the built-in client store at `/store`).
 3. **Reports**: one page per report, in order: ranking (visibility, ranks, heatmap, competitors), accuracy audit
    (fact-check grid, AEO flags, AI overview), then the website section (Maat's overview and recommendations, the
    product's page vs. the database, rulebook results, Google's view, and the crawl log).
 
 ### Demo store
 
-`/demo-store` is a small storefront generated from the product database so the crawl has a site to inspect. Most
+`/store` is a small storefront generated from the product database so the crawl has a site to inspect. Most
 pages are correct; a set of deliberate AEO/GEO mistakes (wrong price, stale availability, noindex, wrong canonical,
 rating markup mismatch, orphan page, JS-only page, crawler blocked in robots.txt, and so on) is listed in
 `DEFECTS` in `server/src/demoStore.js`. Google PageSpeed can only reach public URLs, so Google's view appears when
@@ -96,7 +96,7 @@ server/  Express API, SQLite via Node's built-in node:sqlite (Node 22.5+)
   src/siteAudit.js        evaluates the crawl against the rulebook, with the product database as truth
   src/maat.js             Maat: AEO/GEO expert recommendations (Claude or rulebook mode)
   src/rulebook.js         loads the AEO/GEO rulebook: rules, sources, guidance
-  src/demoStore.js        demo client storefront at /demo-store with deliberate defects
+  src/demoStore.js        client storefront at /store (built from the product database) with deliberate defects
 ```
 
 ### API
@@ -109,7 +109,7 @@ server/  Express API, SQLite via Node's built-in node:sqlite (Node 22.5+)
 | GET | `/api/providers` | models and whether each is live or simulated |
 | POST | `/api/reports` | `{ productIds, models, promptsPerProduct, customPrompts, siteUrl }` → `{ id }` (runs all phases async; `siteUrl` optional) |
 | GET | `/api/reports`, `/api/reports/:id` | list / poll a report |
-| GET | `/demo-store/...`, `/robots.txt` | demo client storefront and its robots.txt |
+| GET | `/store/...`, `/robots.txt` | demo client storefront and its robots.txt |
 
 ## Deploying to Render
 
