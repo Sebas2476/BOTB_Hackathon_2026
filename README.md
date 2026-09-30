@@ -23,8 +23,8 @@ npm install
 npm run dev          # API on :3001, site on http://localhost:5173
 ```
 
-The site has two parts: the marketing homepage at `/` (`client/index.html`, a standalone page whose demo
-widgets use illustrative sample data) and the working app at `/app` (`client/app.html` + React). The homepage's
+The site has two parts: the marketing pages, the homepage at `/` (`client/index.html`) and pricing at `/pricing`
+(`client/pricing.html`), which share `client/src/site.css`; and the working app at `/app` (`client/app.html` + React). The homepage's
 **Run an AI Product Audit**, **Run Your First MAAT Audit**, and **Sign In** buttons open the app; there are no
 user accounts yet, so Sign In goes straight in. Old links such as `/reports/5` redirect to `/app/reports/5`.
 
@@ -84,7 +84,7 @@ is stored as a product spec and checked by the accuracy audit.
 ## Architecture
 
 ```
-client/  Vite: marketing homepage (index.html) + React app under /app (app.html, react-router)
+client/  Vite: marketing pages (index.html, pricing.html) + React app under /app (app.html, react-router)
 server/  Express API, SQLite via Node's built-in node:sqlite (Node 22.5+)
   src/prompts.js          shopper-style test prompt templates
   src/providers/          Claude / OpenAI / Gemini / Azure adapters + simulator

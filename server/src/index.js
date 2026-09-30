@@ -128,6 +128,7 @@ const clientDist = path.join(__dirname, '..', '..', 'client', 'dist');
 if (fs.existsSync(path.join(clientDist, 'index.html'))) {
   // Links from before the app moved under /app keep working.
   app.get(['/products', '/run', '/reports', '/reports/:id'], (req, res) => res.redirect(301, `/app${req.path}`));
+  app.get(['/pricing', '/pricing/'], (_req, res) => res.sendFile(path.join(clientDist, 'pricing.html')));
   app.use(express.static(clientDist));
   // The homepage is index.html; every /app route is handled by the React app in app.html.
   app.use((req, res, next) => {
