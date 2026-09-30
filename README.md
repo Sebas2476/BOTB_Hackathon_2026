@@ -20,8 +20,13 @@ A business picks products from its catalog and runs **one report with three phas
 
 ```bash
 npm install
-npm run dev          # API on :3001, web app on http://localhost:5173
+npm run dev          # API on :3001, site on http://localhost:5173
 ```
+
+The site has two parts: the marketing homepage at `/` (`client/index.html`, a standalone page whose demo
+widgets use illustrative sample data) and the working app at `/app` (`client/app.html` + React). The homepage's
+**Run an AI Product Audit**, **Run Your First MAAT Audit**, and **Sign In** buttons open the app; there are no
+user accounts yet, so Sign In goes straight in. Old links such as `/reports/5` redirect to `/app/reports/5`.
 
 1. **Products**: the home database (`server/sample-data/product_database.csv`, 20 products) loads automatically
    when the database is empty, or via **Load home database**. You can also upload your own CSV/JSON or add a product manually.
@@ -79,7 +84,7 @@ is stored as a product spec and checked by the accuracy audit.
 ## Architecture
 
 ```
-client/  Vite + React dashboard (react-router)
+client/  Vite: marketing homepage (index.html) + React app under /app (app.html, react-router)
 server/  Express API, SQLite via Node's built-in node:sqlite (Node 22.5+)
   src/prompts.js          shopper-style test prompt templates
   src/providers/          Claude / OpenAI / Gemini / Azure adapters + simulator

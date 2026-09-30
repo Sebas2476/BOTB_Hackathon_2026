@@ -1,8 +1,25 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
+// Two pages: the marketing homepage (index.html) and the MAAT app (app.html, served under /app).
+const appRoutes = {
+  name: 'app-routes',
+  configureServer(server) {
+    server.middlewares.use((req, _res, next) => {
+      const path = req.url.split('?')[0]
+      if (path === '/app' || (path.startsWith('/app/') && !path.includes('.'))) req.url = '/app.html'
+      next()
+    })
+  },
+}
+
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), appRoutes],
+  build: {
+    rollupOptions: {
+      input: { main: 'index.html', app: 'app.html' },
+    },
+  },
   server: {
     proxy: {
       '/api': 'http://localhost:3001',

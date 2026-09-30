@@ -108,14 +108,17 @@ app.post('/api/reports', async (req, res) => {
 
 // --- Web app (production) ---------------------------------------------------
 // When the client has been built, serve it from this same server so the whole
-// app deploys as one service. Unknown non-API GETs fall back to index.html so
-// client-side routes like /reports/2 survive a page refresh.
+// site deploys as one service: the marketing homepage at / and the app under /app,
+// where client-side routes like /app/reports/2 survive a page refresh.
 const clientDist = path.join(__dirname, '..', '..', 'client', 'dist');
 if (fs.existsSync(path.join(clientDist, 'index.html'))) {
+  // Links from before the app moved under /app keep working.
+  app.get(['/products', '/run', '/reports', '/reports/:id'], (req, res) => res.redirect(301, `/app${req.path}`));
   app.use(express.static(clientDist));
+  // The homepage is index.html; every /app route is handled by the React app in app.html.
   app.use((req, res, next) => {
-    if (req.method !== 'GET' || req.path.startsWith('/api')) return next();
-    res.sendFile(path.join(clientDist, 'index.html'));
+    if (req.method !== 'GET' || !/^\/app(\/|$)/.test(req.path)) return next();
+    res.sendFile(path.join(clientDist, 'app.html'));
   });
 }
 

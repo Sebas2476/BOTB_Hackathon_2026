@@ -14,16 +14,17 @@ export default function App() {
   return (
     <div className="app">
       <aside className="sidebar">
-        <div className="brand">
-          <img className="brand-mark" src="/logo-mark.png" alt="" />
-          MAAT Intelligence
-        </div>
+        <a className="brand" href="/" aria-label="MAAT Intelligence homepage">
+          <img className="brand-mark" src="/logo-wings.png" alt="" />
+          <span>MAAT <small>Intelligence</small></span>
+        </a>
         {NAV.map((n) => (
           <NavLink key={n.to} to={n.to} className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
             <span className="nav-step">{n.step}</span>
             {n.label}
           </NavLink>
         ))}
+        <a className="nav-link nav-home" href="/">← Homepage</a>
         <div className="sidebar-foot">See how AI assistants rank and describe your products, and what your website should change so they get it right.</div>
       </aside>
       <main className="main">
